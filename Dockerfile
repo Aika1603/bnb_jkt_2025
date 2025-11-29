@@ -24,6 +24,22 @@ FROM base AS vendor
 COPY composer.json ./
 RUN composer install --no-dev --prefer-dist --optimize-autoloader --no-scripts
 
+# ---------- Wayfinder generator (butuh PHP untuk generate types) ----------
+FROM vendor AS wayfinder
+# Copy semua file yang diperlukan untuk generate wayfinder
+COPY routes/ routes/
+COPY app/ app/
+COPY bootstrap/ bootstrap/
+COPY config/ config/
+COPY artisan artisan
+# Pastikan direktori wayfinder ada
+RUN mkdir -p resources/js/actions resources/js/routes resources/js/wayfinder
+# Generate wayfinder types
+# Set APP_ENV untuk menghindari error saat generate
+ENV APP_ENV=production
+# Generate wayfinder (tidak fail build jika gagal, karena kita skip plugin di vite.config.ts)
+RUN php artisan wayfinder:generate --with-form || echo "Wayfinder generation failed, will be skipped during build"
+
 # ---------- Frontend builder (Node 24.1.0 + pnpm 10.11.1) ----------
 FROM node:24.1.0 AS frontend
 WORKDIR /app
@@ -42,6 +58,16 @@ COPY vite.config.* .
 # (opsional) jika ada: postcss/tailwind/tsconfig
 # COPY postcss.config.* tailwind.config.* tsconfig*.json* ./
 
+# Pastikan direktori tujuan ada sebelum copy (untuk mencegah error jika direktori belum ada)
+RUN mkdir -p resources/js/actions resources/js/routes resources/js/wayfinder
+
+# Copy wayfinder generated types dari stage wayfinder
+COPY --from=wayfinder /var/www/html/resources/js/actions resources/js/actions
+COPY --from=wayfinder /var/www/html/resources/js/routes resources/js/routes
+COPY --from=wayfinder /var/www/html/resources/js/wayfinder resources/js/wayfinder
+
+# Build assets produksi (skip wayfinder generation karena sudah di-generate)
+ENV SKIP_WAYFINDER=true
 RUN pnpm run build
 
 # ---------- App final ----------
