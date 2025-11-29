@@ -1,6 +1,7 @@
 # ---------- PHP base ----------
 FROM php:8.2-fpm AS base
 
+# Install dependencies for PHP, Nginx, and additional libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
     nginx curl gnupg zip unzip git ca-certificates \
     libpng-dev libjpeg-dev libfreetype6-dev libonig-dev libxml2-dev libzip-dev libcurl4-openssl-dev \
@@ -41,18 +42,22 @@ COPY vite.config.* .
 FROM base AS wayfinder
 WORKDIR /var/www/html
 
-# Copy only app & vendor needed for wayfinder types
-COPY composer.json ./
+# Copy only the necessary files for wayfinder types
+COPY composer.json composer.lock ./
 RUN composer install --no-dev --prefer-dist --optimize-autoloader --no-scripts
 
+# Copy the entire app code to generate Wayfinder types
 COPY . /var/www/html
-# Pastikan konfigurasi sudah benar (env, routes)
-# Jalankan wayfinder:generate (hasilkan tipe TS di resources/)
+
+# Ensure .env is configured correctly
+COPY .env.gcp-prod /var/www/html/.env
+
+# Run the wayfinder:generate command to generate TypeScript types
 RUN php artisan wayfinder:generate --ansi
 
 # --- End Wayfinder stage ---
 
-# Salin hasil types wayfinder dari stage sebelumnya ke frontend
+# Copy the generated types to frontend
 COPY --from=wayfinder /var/www/html/resources/ts/ /app/resources/ts/
 
 # Build production assets (after wayfinder types exist!)
@@ -68,15 +73,15 @@ FROM base AS app
 
 # Copy source code
 COPY . /var/www/html
-COPY .env.gcp-prod /var/www/html/.env
+COPY .env.example /var/www/html/.env
 
-# Vendor dari stage vendor
+# Copy vendor from the vendor stage
 COPY --from=vendor /var/www/html/vendor /var/www/html/vendor
 
-# Asset Vite hasil build
+# Copy built frontend assets
 COPY --from=frontend /app/public/build /var/www/html/public/build
 
-# Permission & dirs
+# Set permissions for Nginx and PHP-FPM
 RUN mkdir -p /var/lib/nginx/body /var/lib/nginx/fastcgi /var/lib/nginx/proxy /var/lib/nginx/scgi /var/lib/nginx/uwsgi \
     && chown -R www-data:www-data /var/lib/nginx \
     && mkdir -p /var/log/nginx /var/log/php-fpm \
@@ -84,10 +89,11 @@ RUN mkdir -p /var/lib/nginx/body /var/lib/nginx/fastcgi /var/lib/nginx/proxy /va
     && chown -R www-data:www-data /var/www/html \
     && chmod -R 775 storage bootstrap/cache
 
-# Entrypoint: artisan dijalankan di runtime (env Cloud Run sudah valid)
+# Entrypoint to run artisan in runtime (env Cloud Run valid)
 COPY ./docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# Set environment variable for the port
 ENV PORT=8080
 EXPOSE 8080
 CMD ["/entrypoint.sh"]
