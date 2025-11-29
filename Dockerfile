@@ -43,7 +43,7 @@ FROM base AS wayfinder
 WORKDIR /var/www/html
 
 # Copy only the necessary files for wayfinder types
-COPY composer.json composer.lock ./
+COPY composer.json ./
 RUN composer install --no-dev --prefer-dist --optimize-autoloader --no-scripts
 
 # Copy the entire app code to generate Wayfinder types
