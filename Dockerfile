@@ -42,7 +42,7 @@ FROM base AS wayfinder
 WORKDIR /var/www/html
 
 # Copy only app & vendor needed for wayfinder types
-COPY composer.json composer.lock ./
+COPY composer.json ./
 RUN composer install --no-dev --prefer-dist --optimize-autoloader --no-scripts
 
 COPY . /var/www/html
