@@ -50,7 +50,7 @@ RUN composer install --no-dev --prefer-dist --optimize-autoloader --no-scripts
 COPY . /var/www/html
 
 # Ensure .env is configured correctly
-COPY .env.gcp-prod /var/www/html/.env
+COPY .env.example /var/www/html/.env
 
 # Run the wayfinder:generate command to generate TypeScript types
 RUN php artisan wayfinder:generate --ansi
