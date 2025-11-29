@@ -1,5 +1,4 @@
 import AppLayout from '@/layouts/app-layout';
-import { dashboard } from '@/routes';
 import { type BreadcrumbItem, type Hiarc } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
@@ -9,7 +8,7 @@ import { TriangleAlert, Sparkles, Loader2, AlertCircle } from 'lucide-react';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'HIRADC',
-        href: dashboard().url,
+        href: 'dashboard',
     },
 ];
 
