@@ -9,6 +9,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && docker-php-ext-install -j$(nproc) pdo_mysql mbstring exif pcntl bcmath gd zip curl \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/*.deb
 
+# Install Node.js 24.x dan pnpm
+RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g pnpm@10.11.1 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /var/www/html
 
 # PHP & Nginx config
@@ -24,45 +30,6 @@ FROM base AS vendor
 COPY composer.json ./
 RUN composer install --no-dev --prefer-dist --optimize-autoloader --no-scripts
 
-# ---------- Wayfinder generator (butuh PHP untuk generate types) ----------
-FROM vendor AS wayfinder
-# Copy semua file yang diperlukan untuk generate wayfinder
-COPY routes/ routes/
-COPY app/ app/
-COPY bootstrap/ bootstrap/
-COPY config/ config/
-COPY artisan artisan
-# Pastikan direktori wayfinder ada
-RUN mkdir -p resources/js/actions resources/js/routes resources/js/wayfinder
-# Generate wayfinder types
-# Set APP_ENV untuk menghindari error saat generate
-ENV APP_ENV=production
-# Generate wayfinder (tidak fail build jika gagal, karena kita skip plugin di vite.config.ts)
-RUN php artisan wayfinder:generate --with-form || echo "Wayfinder generation failed, will be skipped during build"
-
-# ---------- Frontend builder (Node 24.1.0 + pnpm 10.11.1) ----------
-FROM node:24.1.0 AS frontend
-WORKDIR /app
-
-# Install pnpm v10.11.1
-RUN npm i -g pnpm@10.11.1
-
-# Install deps (cache-friendly)
-COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile
-
-# Copy source utk Vite
-COPY resources/ resources/
-COPY public/ public/
-COPY vite.config.* .
-# (opsional) jika ada: postcss/tailwind/tsconfig
-# COPY postcss.config.* tailwind.config.* tsconfig*.json* ./
-
-# Pastikan direktori tujuan ada sebelum copy (untuk mencegah error jika direktori belum ada)
-# RUN mkdir -p resources/js/actions resources/js/routes resources/js/wayfinder
-
-RUN pnpm run build
-
 # ---------- App final ----------
 FROM base AS app
 
@@ -72,9 +39,6 @@ COPY .env.gcp-prod /var/www/html/.env
 
 # Vendor dari stage vendor
 COPY --from=vendor /var/www/html/vendor /var/www/html/vendor
-
-# Asset Vite hasil build
-COPY --from=frontend /app/public/build /var/www/html/public/build
 
 # Permission & dirs
 RUN mkdir -p /var/lib/nginx/body /var/lib/nginx/fastcgi /var/lib/nginx/proxy /var/lib/nginx/scgi /var/lib/nginx/uwsgi \
