@@ -21,6 +21,13 @@ Homestead.yaml
 npm-debug.log
 yarn-error.log
 /auth.json
+*.json
+!package.json
+!composer.json
+!tsconfig.json
+!components.json
+!boost.json
+!package-lock.json
 /.fleet
 /.idea
 /.nova
