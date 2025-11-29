@@ -4,6 +4,7 @@ import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { TriangleAlert, Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import axios from 'axios';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -130,36 +131,29 @@ export default function Dashboard({ hiarcs }: DashboardProps) {
     // For displaying disclaimer after generation
     const [hasGenerated, setHasGenerated] = useState(false);
 
+
     const handleGenerateAI = async () => {
         setIsGenerating(true);
         setError(null);
         setHasGenerated(false);
 
         try {
-            const csrfToken = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content;
-            
-            if (!csrfToken) {
-                throw new Error('CSRF token not found');
-            }
-
-            const response = await fetch('/dashboard/generate-ai-recommendation', {
-                method: 'POST',
+            const response = await axios.get('/dashboard/generate-ai-recommendation', {
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json',
                 },
-                credentials: 'same-origin',
+                withCredentials: true,
             });
 
-            const data = await response.json();
+            const data = response.data;
 
-            if (!response.ok || !data.success) {
+            if (!response.status || !data.success) {
                 throw new Error(data.message || 'Failed to generate recommendations');
             }
             console.log(data);
-            
+
             setAiSummary(data.summary);
             setAiOverallRiskScore(data.scoring);
             setAiDetermining(data.recommendation);
@@ -249,7 +243,7 @@ export default function Dashboard({ hiarcs }: DashboardProps) {
                                                 {isGenerating ? (
                                                     <>
                                                         <Loader2 className="h-4 w-4 animate-spin" />
-                                                        Generating...
+                                                        Generating with Gemini AI
                                                     </>
                                                 ) : hasGenerated === false ? (
                                                     <>
@@ -265,7 +259,7 @@ export default function Dashboard({ hiarcs }: DashboardProps) {
                                     {hasGenerated && (
                                         <div className="flex items-center gap-2 rounded-md bg-yellow-100 border border-yellow-300 text-yellow-700 p-3 text-sm mb-4">
                                             <span>
-                                                <b>Disclaimer:</b> Hasil yang dihasilkan menggunakan Gemini-2.5-flash dapat mengandung kesalahan. Silakan lakukan verifikasi ulang hasil rekomendasi maupun identifikasi sebelum mengambil keputusan lebih lanjut.
+                                                <b>Disclaimer:</b> Hasil yang dihasilkan menggunakan Gemini-2.5-flash dapat mengandung kesalahan.
                                             </span>
                                         </div>
                                     )}
@@ -275,7 +269,7 @@ export default function Dashboard({ hiarcs }: DashboardProps) {
                                             <h3 className="text-lg font-semibold">Summary of Hazard Identification</h3>
                                         </div>
                                         {error && (
-                                            <div className="mb-4 rounded-md bg-destructive/10 p-0 text-sm text-destructive">
+                                            <div className="mb-4 rounded-md bg-destructive/10 p-0 text-sm text-neutral-800">
                                                 {error}
                                             </div>
                                         )}
@@ -300,7 +294,7 @@ export default function Dashboard({ hiarcs }: DashboardProps) {
                                             <h3 className="text-lg font-semibold">Recommendation for Determining Control</h3>
                                         </div>
                                         {error && (
-                                            <div className="mb-4 rounded-md bg-destructive/10 p-0 text-sm text-destructive">
+                                            <div className="mb-4 rounded-md bg-destructive/10 p-0 text-sm text-neutral-800">
                                                 {error}
                                             </div>
                                         )}

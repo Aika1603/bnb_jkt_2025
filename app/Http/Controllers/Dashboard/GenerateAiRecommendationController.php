@@ -54,7 +54,7 @@ Anda wajib memberikan respons HANYA dalam format JSON:
 {
     "summary": "Ringkasan eksekutif (maks 100 kata) tentang postur keselamatan dari data ini. Gunakan bahasa Indonesia formal.",
     "scoring": 3 | 2 | 1,
-    "recommendation": "Rekomendasi berdasarkan ringkasan dari seluruh opportunity_for_improvement pada potential_danger. Rekomendasi boleh mengandung tag HTML sederhana."
+    "recommendation": "Rekomendasi berdasarkan ringkasan dari seluruh object opportunity_for_improvement pada potential_danger. Rekomendasi boleh mengandung tag HTML sederhana. Jangan menambahkan penjelasan apapun diluar konteks yang terdapat pada opportunity_for_improvement. Maksimal hanya menampilkan 5 poin rekomendasi utama."
 }
 
 LOGIKA SCORING (PENILAIAN):

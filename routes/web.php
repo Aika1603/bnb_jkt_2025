@@ -13,7 +13,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
     })->name('dashboard');
 
-    Route::post('dashboard/generate-ai-recommendation', [\App\Http\Controllers\Dashboard\GenerateAiRecommendationController::class, 'generate'])
+    Route::get('dashboard/generate-ai-recommendation', [\App\Http\Controllers\Dashboard\GenerateAiRecommendationController::class, 'generate'])
         ->name('dashboard.generate-ai-recommendation');
 });
 

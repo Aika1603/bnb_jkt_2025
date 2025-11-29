@@ -4,15 +4,15 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 * @see app/Http/Controllers/Dashboard/GenerateAiRecommendationController.php:20
 * @route '/dashboard/generate-ai-recommendation'
 */
-export const generateAiRecommendation = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const generateAiRecommendation = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: generateAiRecommendation.url(options),
-    method: 'post',
+    method: 'get',
 })
 
 generateAiRecommendation.definition = {
-    methods: ["post"],
+    methods: ["get","head"],
     url: '/dashboard/generate-ai-recommendation',
-} satisfies RouteDefinition<["post"]>
+} satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\Dashboard\GenerateAiRecommendationController::generateAiRecommendation
@@ -28,9 +28,9 @@ generateAiRecommendation.url = (options?: RouteQueryOptions) => {
 * @see app/Http/Controllers/Dashboard/GenerateAiRecommendationController.php:20
 * @route '/dashboard/generate-ai-recommendation'
 */
-generateAiRecommendation.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+generateAiRecommendation.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: generateAiRecommendation.url(options),
-    method: 'post',
+    method: 'get',
 })
 
 /**
@@ -38,9 +38,9 @@ generateAiRecommendation.post = (options?: RouteQueryOptions): RouteDefinition<'
 * @see app/Http/Controllers/Dashboard/GenerateAiRecommendationController.php:20
 * @route '/dashboard/generate-ai-recommendation'
 */
-const generateAiRecommendationForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: generateAiRecommendation.url(options),
-    method: 'post',
+generateAiRecommendation.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: generateAiRecommendation.url(options),
+    method: 'head',
 })
 
 /**
@@ -48,9 +48,34 @@ const generateAiRecommendationForm = (options?: RouteQueryOptions): RouteFormDef
 * @see app/Http/Controllers/Dashboard/GenerateAiRecommendationController.php:20
 * @route '/dashboard/generate-ai-recommendation'
 */
-generateAiRecommendationForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const generateAiRecommendationForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: generateAiRecommendation.url(options),
-    method: 'post',
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Dashboard\GenerateAiRecommendationController::generateAiRecommendation
+* @see app/Http/Controllers/Dashboard/GenerateAiRecommendationController.php:20
+* @route '/dashboard/generate-ai-recommendation'
+*/
+generateAiRecommendationForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: generateAiRecommendation.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Dashboard\GenerateAiRecommendationController::generateAiRecommendation
+* @see app/Http/Controllers/Dashboard/GenerateAiRecommendationController.php:20
+* @route '/dashboard/generate-ai-recommendation'
+*/
+generateAiRecommendationForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: generateAiRecommendation.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
 })
 
 generateAiRecommendation.form = generateAiRecommendationForm
