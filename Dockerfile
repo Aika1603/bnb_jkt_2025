@@ -31,7 +31,7 @@ COPY package.json ./
 RUN composer install --no-dev --prefer-dist --optimize-autoloader --no-scripts
 
 # Install Node dependencies (cache-friendly)
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # Copy all source code
 COPY . /var/www/html
