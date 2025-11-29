@@ -1,11 +1,14 @@
-# ---------- PHP base ----------
-FROM php:8.2-fpm AS base
+# ---------- Unified PHP+Node base ----------
+FROM php:8.2-fpm
 
-# Install dependencies for PHP, Nginx, and additional libraries
+# Install system dependencies and Node.js (v24.x), pnpm, and Nginx
 RUN apt-get update && apt-get install -y --no-install-recommends \
     nginx curl gnupg zip unzip git ca-certificates \
     libpng-dev libjpeg-dev libfreetype6-dev libonig-dev libxml2-dev libzip-dev libcurl4-openssl-dev \
     nano \
+    && curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+    && apt-get install -y nodejs \
+    && npm i -g pnpm@10.11.1 \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) pdo_mysql mbstring exif pcntl bcmath gd zip curl \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -20,66 +23,27 @@ COPY ./nginx/laravel.conf /etc/nginx/sites-available/default
 ENV COMPOSER_ALLOW_SUPERUSER=1
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# ---------- Frontend builder (Node 24.1.0 + pnpm 10.11.1) ----------
-FROM node:24.1.0 AS frontend
-WORKDIR /app
+# Copy dependency/project files for PHP and Node
+COPY composer.json ./
+COPY package.json ./
 
-# Install pnpm v10.11.1
-RUN npm i -g pnpm@10.11.1
+# Install PHP dependencies (prod, vendor cache-friendly)
+RUN composer install --no-dev --prefer-dist --optimize-autoloader --no-scripts
 
-# Install dependencies (cache-friendly)
-COPY package.json pnpm-lock.yaml* ./
+# Install Node dependencies (cache-friendly)
 RUN pnpm install --frozen-lockfile
 
-# Copy source for Vite (and wayfinder types)
-COPY resources/ resources/
-COPY public/ public/
-COPY vite.config.* .
-
-# --- Wayfinder: Generate types before build ---
-# Laravel/wayfinder relies on a PHP command, needs the PHP app code and vendor deps.
-# We'll copy only what is strictly needed to run wayfinder:generate for correct type output.
-FROM base AS wayfinder
-WORKDIR /var/www/html
-
-# Copy only the necessary files for wayfinder types
-COPY composer.json ./
-RUN composer install --no-dev --prefer-dist --optimize-autoloader --no-scripts
-
-# Copy the entire app code to generate Wayfinder types
+# Copy all source code
 COPY . /var/www/html
 
-# Ensure .env is configured correctly
+# Ensure environment for building and for Laravel Wayfinder types
 COPY .env.example /var/www/html/.env
 
-# Run the wayfinder:generate command to generate TypeScript types
+# Run wayfinder:generate to generate TypeScript types
 RUN php artisan wayfinder:generate --ansi
 
-# --- End Wayfinder stage ---
-
-# Copy the generated types to frontend
-COPY --from=wayfinder /var/www/html/resources/ts/ /app/resources/ts/
-
-# Build production assets (after wayfinder types exist!)
+# Build frontend assets (Vite, using generated types)
 RUN pnpm run build
-
-# ---------- Composer vendor (cache-friendly) ----------
-FROM base AS vendor
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --prefer-dist --optimize-autoloader --no-scripts
-
-# ---------- App final ----------
-FROM base AS app
-
-# Copy source code
-COPY . /var/www/html
-COPY .env.example /var/www/html/.env
-
-# Copy vendor from the vendor stage
-COPY --from=vendor /var/www/html/vendor /var/www/html/vendor
-
-# Copy built frontend assets
-COPY --from=frontend /app/public/build /var/www/html/public/build
 
 # Set permissions for Nginx and PHP-FPM
 RUN mkdir -p /var/lib/nginx/body /var/lib/nginx/fastcgi /var/lib/nginx/proxy /var/lib/nginx/scgi /var/lib/nginx/uwsgi \
@@ -96,4 +60,5 @@ RUN chmod +x /entrypoint.sh
 # Set environment variable for the port
 ENV PORT=8080
 EXPOSE 8080
+
 CMD ["/entrypoint.sh"]
