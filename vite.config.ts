@@ -17,15 +17,6 @@ export default defineConfig({
             },
         }),
         tailwindcss(),
-        // Skip wayfinder generation saat build Docker (sudah di-generate di stage wayfinder)
-        // Hanya generate jika SKIP_WAYFINDER tidak diset (untuk development)
-        ...(process.env.SKIP_WAYFINDER !== 'true'
-            ? [
-                  wayfinder({
-                      formVariants: true,
-                  }),
-              ]
-            : []),
     ],
     esbuild: {
         jsx: 'automatic',
