@@ -35,6 +35,7 @@ FROM base AS app
 
 # Copy source code
 COPY . /var/www/html
+COPY .env.example /var/www/html/.env
 
 # Vendor dari stage vendor
 COPY --from=vendor /var/www/html/vendor /var/www/html/vendor
