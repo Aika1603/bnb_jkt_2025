@@ -59,15 +59,8 @@ COPY vite.config.* .
 # COPY postcss.config.* tailwind.config.* tsconfig*.json* ./
 
 # Pastikan direktori tujuan ada sebelum copy (untuk mencegah error jika direktori belum ada)
-RUN mkdir -p resources/js/actions resources/js/routes resources/js/wayfinder
+# RUN mkdir -p resources/js/actions resources/js/routes resources/js/wayfinder
 
-# Copy wayfinder generated types dari stage wayfinder
-COPY --from=wayfinder /var/www/html/resources/js/actions resources/js/actions
-COPY --from=wayfinder /var/www/html/resources/js/routes resources/js/routes
-COPY --from=wayfinder /var/www/html/resources/js/wayfinder resources/js/wayfinder
-
-# Build assets produksi (skip wayfinder generation karena sudah di-generate)
-ENV SKIP_WAYFINDER=true
 RUN pnpm run build
 
 # ---------- App final ----------
