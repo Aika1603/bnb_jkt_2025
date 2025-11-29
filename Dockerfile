@@ -7,12 +7,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     nano \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) pdo_mysql mbstring exif pcntl bcmath gd zip curl \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/*.deb
-
-# Install Node.js 24.x dan pnpm
-RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install -g pnpm@10.11.1 \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /var/www/html
@@ -25,9 +19,48 @@ COPY ./nginx/laravel.conf /etc/nginx/sites-available/default
 ENV COMPOSER_ALLOW_SUPERUSER=1
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+# ---------- Frontend builder (Node 24.1.0 + pnpm 10.11.1) ----------
+FROM node:24.1.0 AS frontend
+WORKDIR /app
+
+# Install pnpm v10.11.1
+RUN npm i -g pnpm@10.11.1
+
+# Install dependencies (cache-friendly)
+COPY package.json pnpm-lock.yaml* ./
+RUN pnpm install --frozen-lockfile
+
+# Copy source for Vite (and wayfinder types)
+COPY resources/ resources/
+COPY public/ public/
+COPY vite.config.* .
+
+# --- Wayfinder: Generate types before build ---
+# Laravel/wayfinder relies on a PHP command, needs the PHP app code and vendor deps.
+# We'll copy only what is strictly needed to run wayfinder:generate for correct type output.
+FROM base AS wayfinder
+WORKDIR /var/www/html
+
+# Copy only app & vendor needed for wayfinder types
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --prefer-dist --optimize-autoloader --no-scripts
+
+COPY . /var/www/html
+# Pastikan konfigurasi sudah benar (env, routes)
+# Jalankan wayfinder:generate (hasilkan tipe TS di resources/)
+RUN php artisan wayfinder:generate --ansi
+
+# --- End Wayfinder stage ---
+
+# Salin hasil types wayfinder dari stage sebelumnya ke frontend
+COPY --from=wayfinder /var/www/html/resources/ts/ /app/resources/ts/
+
+# Build production assets (after wayfinder types exist!)
+RUN pnpm run build
+
 # ---------- Composer vendor (cache-friendly) ----------
 FROM base AS vendor
-COPY composer.json ./
+COPY composer.json composer.lock ./
 RUN composer install --no-dev --prefer-dist --optimize-autoloader --no-scripts
 
 # ---------- App final ----------
@@ -35,10 +68,13 @@ FROM base AS app
 
 # Copy source code
 COPY . /var/www/html
-COPY .env.example /var/www/html/.env
+COPY .env.gcp-prod /var/www/html/.env
 
 # Vendor dari stage vendor
 COPY --from=vendor /var/www/html/vendor /var/www/html/vendor
+
+# Asset Vite hasil build
+COPY --from=frontend /app/public/build /var/www/html/public/build
 
 # Permission & dirs
 RUN mkdir -p /var/lib/nginx/body /var/lib/nginx/fastcgi /var/lib/nginx/proxy /var/lib/nginx/scgi /var/lib/nginx/uwsgi \
