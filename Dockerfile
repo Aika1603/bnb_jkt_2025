@@ -32,9 +32,7 @@ COPY app/ app/
 COPY bootstrap/ bootstrap/
 COPY config/ config/
 COPY artisan artisan
-# Pastikan direktori wayfinder ada
-RUN mkdir -p resources/js/actions resources/js/routes resources/js/wayfinder
-# Generate wayfinder types
+
 # Set APP_ENV untuk menghindari error saat generate
 ENV APP_ENV=production
 # Generate wayfinder (tidak fail build jika gagal, karena kita skip plugin di vite.config.ts)
@@ -57,11 +55,6 @@ COPY public/ public/
 COPY vite.config.* .
 # (opsional) jika ada: postcss/tailwind/tsconfig
 # COPY postcss.config.* tailwind.config.* tsconfig*.json* ./
-
-# Copy wayfinder generated types dari stage wayfinder
-COPY --from=wayfinder /var/www/html/resources/js/actions resources/js/actions
-COPY --from=wayfinder /var/www/html/resources/js/routes resources/js/routes
-COPY --from=wayfinder /var/www/html/resources/js/wayfinder resources/js/wayfinder
 
 # Build assets produksi (skip wayfinder generation karena sudah di-generate)
 ENV SKIP_WAYFINDER=true
