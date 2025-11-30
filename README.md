@@ -8,7 +8,7 @@
 
 # Source Code
 
-https://github.com/yourusername/bnb-jkt
+https://github.com/Aika1603/bnb_jkt_2025
 
 > This repository contains an intelligent HIRADC (Hazard Identification, Risk Assessment, and Determining Control) analysis system powered by Google Gemini AI.
 
