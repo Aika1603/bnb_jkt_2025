@@ -2,16 +2,34 @@
 
 HIRADC (Hazard Identification, Risk Assessment, and Determining Control) dengan fitur AI recommendation menggunakan Google Gemini.
 
+## What is the Project?
+
+Aplikasi ini berfungsi sebagai “asisten cerdas” bagi Engineer HSE. Daripada membaca ratusan baris spreadsheet secara manual untuk menentukan apakah suatu area pabrik berisiko tinggi, pengguna cukup mengunggah data HIRADC mereka yang sudah terstruktur.
+
+Sistem akan memproses data tersebut dan memberikan:
+
+- **Automated Executive Summary**: Teks ringkas yang menjelaskan kondisi keselamatan fasilitas secara keseluruhan.
+- **Consolidated Risk Score**: Metrik terhitung (High/Medium/Low) berdasarkan tingkat keparahan bahaya yang ditemukan dalam data.
+- **Actionable Recommendations**: Saran yang dihasilkan AI untuk meningkatkan kontrol yang ada (misalnya, menyarankan Engineering Controls daripada sekadar Administrative Controls).
 
 ## Tech Stack
 
-- **Backend**: Laravel 12
-- **Frontend**: React 19 + Inertia.js v2
-- **Styling**: Tailwind CSS v4
-- **Language**: TypeScript
-- **Authentication**: Laravel Fortify
-- **Testing**: Pest PHP
-- **AI**: Google Gemini
+Untuk membangun solusi ini, saya menggunakan arsitektur modern yang menggabungkan ketangguhan PHP dengan reaktivitas Single Page Application (SPA).
+
+- **Backend**: Laravel 11 (PHP)
+- **Frontend**: React.js (via Inertia.js)
+- **Database**: MySQL / MariaDB
+- **AI Model**: Google Gemini 2.0 Flash (via Gemini API)
+- **Styling**: Tailwind CSS / Shadcn UI
+
+## High-Level Design
+
+Arsitektur sistem mengikuti alur Input-Proses-Output yang efisien:
+
+1. **Data Ingestion**: Pengguna mengunggah dataset (CSV/JSON) yang berisi kolom seperti Potential Hazard, Current Controls, dan Risk Score melalui frontend React (Untuk case ini kita menggunakan seeder sebagai datasets).
+2. **AI Processing Core**: Backend Laravel menerima data ini, menyusun prompt yang sadar konteks (context-aware), dan mengirimkannya ke model Gemini.
+3. **Analytics Dashboard**: Respons JSON terstruktur dari Gemini diuraikan (parsed) dan dirender kembali ke pengguna, menampilkan ringkasan analisis dan rekomendasi perbaikan.
+
 
 ## Requirements
 
