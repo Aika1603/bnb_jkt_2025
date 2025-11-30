@@ -66,5 +66,3 @@ The system transforms traditional, time-consuming risk assessment workflows into
 
 6. **Dashboard Rendering**: The analysis results are rendered in the React frontend, displaying summaries, risk scores, and recommendations in an interactive dashboard.
 
-7. **Data Persistence**: Analysis results are stored in the database for historical tracking and future reference.
-
