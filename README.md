@@ -48,7 +48,7 @@ The system transforms traditional, time-consuming risk assessment workflows into
 
 ## ⚙️ Architecture & Workflow
 
-1. **Data Ingestion**: Users upload a dataset (CSV/JSON) containing columns such as Potential Hazard, Current Controls, and Risk Score through the React frontend. Alternatively, data can be seeded directly into the database for testing purposes.
+1. **Data Ingestion**: Dataset containing columns such as Potential Hazard, Current Controls, and Risk Score through the React frontend. Alternatively, data can be seeded directly into the database for testing purposes.
 
 2. **Data Processing**: The Laravel backend receives and validates the structured HIRADC data, ensuring all required fields are present and properly formatted.
 
