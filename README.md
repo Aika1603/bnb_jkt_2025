@@ -1,20 +1,20 @@
-# BNB JKT
+# Simple AI-Powered HIRADC Analyzer with Laravel and Gemini
 
-HIRADC (Hazard Identification, Risk Assessment, and Determining Control) dengan fitur AI recommendation menggunakan Google Gemini.
+HIRADC (Hazard Identification, Risk Assessment, and Determining Control) with AI recommendation features powered by Google Gemini.
 
 ## What is the Project?
 
-Aplikasi ini berfungsi sebagai “asisten cerdas” bagi Engineer HSE. Daripada membaca ratusan baris spreadsheet secara manual untuk menentukan apakah suatu area pabrik berisiko tinggi, pengguna cukup mengunggah data HIRADC mereka yang sudah terstruktur.
+This application acts as an “intelligent assistant” for HSE Engineers. Instead of manually reviewing hundreds of spreadsheet rows to determine whether a factory area is high risk, users simply upload their structured HIRADC data.
 
-Sistem akan memproses data tersebut dan memberikan:
+The system will process the data and provide:
 
-- **Automated Executive Summary**: Teks ringkas yang menjelaskan kondisi keselamatan fasilitas secara keseluruhan.
-- **Consolidated Risk Score**: Metrik terhitung (High/Medium/Low) berdasarkan tingkat keparahan bahaya yang ditemukan dalam data.
-- **Actionable Recommendations**: Saran yang dihasilkan AI untuk meningkatkan kontrol yang ada (misalnya, menyarankan Engineering Controls daripada sekadar Administrative Controls).
+- **Automated Executive Summary**: A concise text explaining the facility’s overall safety condition.
+- **Consolidated Risk Score**: A calculated metric (High/Medium/Low) based on the severity of hazards found in the data.
+- **Actionable Recommendations**: AI-generated suggestions to improve existing controls (such as recommending Engineering Controls instead of just Administrative Controls).
 
 ## Tech Stack
 
-Untuk membangun solusi ini, saya menggunakan arsitektur modern yang menggabungkan ketangguhan PHP dengan reaktivitas Single Page Application (SPA).
+To build this solution, I use a modern architecture combining the robustness of PHP with the reactivity of a Single Page Application (SPA).
 
 - **Backend**: Laravel 11 (PHP)
 - **Frontend**: React.js (via Inertia.js)
@@ -22,13 +22,13 @@ Untuk membangun solusi ini, saya menggunakan arsitektur modern yang menggabungka
 - **AI Model**: Google Gemini 2.0 Flash (via Gemini API)
 - **Styling**: Tailwind CSS / Shadcn UI
 
-## High-Level Design
+## High-Level Design Architecture
 
-Arsitektur sistem mengikuti alur Input-Proses-Output yang efisien:
+The system architecture follows an efficient Input-Process-Output flow:
 
-1. **Data Ingestion**: Pengguna mengunggah dataset (CSV/JSON) yang berisi kolom seperti Potential Hazard, Current Controls, dan Risk Score melalui frontend React (Untuk case ini kita menggunakan seeder sebagai datasets).
-2. **AI Processing Core**: Backend Laravel menerima data ini, menyusun prompt yang sadar konteks (context-aware), dan mengirimkannya ke model Gemini.
-3. **Analytics Dashboard**: Respons JSON terstruktur dari Gemini diuraikan (parsed) dan dirender kembali ke pengguna, menampilkan ringkasan analisis dan rekomendasi perbaikan.
+1. **Data Ingestion**: Users upload a dataset (CSV/JSON) containing columns such as Potential Hazard, Current Controls, and Risk Score through the React frontend (for this case, we use a seeder as the dataset).
+2. **AI Processing Core**: The Laravel backend receives this data, prepares a context-aware prompt, and sends it to the Gemini model.
+3. **Analytics Dashboard**: The structured JSON response from Gemini is parsed and rendered back to the user, displaying analysis summaries and improvement recommendations.
 
 
 ## Requirements
